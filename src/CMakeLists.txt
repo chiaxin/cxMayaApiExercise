@@ -1,6 +1,8 @@
 set(SOURCE_FILES
     "cxapiSimpleHelloWorldCmd.h"
     "cxapiSimpleHelloWorldCmd.cpp"
+	"cxapiSelectNegativeFaceCmd.h"
+	"cxapiSelectNegativeFaceCmd.cpp"
 	"pluginMain.cpp"
 )
 

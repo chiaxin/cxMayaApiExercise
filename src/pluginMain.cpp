@@ -1,3 +1,4 @@
+#include "cxapiSelectNegativeFaceCmd.h"
 #include "cxapiSimpleHelloWorldCmd.h"
 #include <maya/MFnPlugin.h>
 #include <maya/MGlobal.h>
@@ -14,6 +15,15 @@ MStatus initializePlugin(MObject mobj)
     {
         MGlobal::displayError(MString("Failed to register command : ") + CxApiSimpleHelloWorldCmd::kCmdName);
     }
+
+    stat = fn_plugin.registerCommand(
+        CxApiSelectNegativeFaceCmd::kCmdName,
+        CxApiSelectNegativeFaceCmd::creator
+    );
+    if (stat != MS::kSuccess)
+    {
+        MGlobal::displayError(MString("Failed to register command : ") + CxApiSelectNegativeFaceCmd::kCmdName);
+    }
     return stat;
 }
 
@@ -25,6 +35,12 @@ MStatus uninitializePlugin(MObject mobj)
     if (stat != MS::kSuccess)
     {
         MGlobal::displayError(MString("Failed to deregister command : ") + CxApiSimpleHelloWorldCmd::kCmdName);
+    }
+
+    stat = fn_plugin.deregisterCommand(CxApiSelectNegativeFaceCmd::kCmdName);
+    if (stat != MS::kSuccess)
+    {
+        MGlobal::displayError(MString("Failed to deregister command : ") + CxApiSelectNegativeFaceCmd::kCmdName);
     }
 	return stat;
 }
