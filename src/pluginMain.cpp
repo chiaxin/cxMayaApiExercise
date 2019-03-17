@@ -18,7 +18,8 @@ MStatus initializePlugin(MObject mobj)
 
     stat = fn_plugin.registerCommand(
         CxApiSelectNegativeFaceCmd::kCmdName,
-        CxApiSelectNegativeFaceCmd::creator
+        CxApiSelectNegativeFaceCmd::creator,
+        CxApiSelectNegativeFaceCmd::new_syntax
     );
     if (stat != MS::kSuccess)
     {

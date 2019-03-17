@@ -5,4 +5,4 @@
 ## Command
 
 + cxSimpleHelloWorld
-+ selectNegativeFace
++ cxSelectNegativeFace

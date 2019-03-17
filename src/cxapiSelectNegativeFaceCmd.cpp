@@ -7,12 +7,17 @@
 #include <maya/MFnSingleIndexedComponent.h>
 #include <maya/MGlobal.h>
 #include <maya/MPointArray.h>
+#include <maya/MSyntax.h>
+#include <maya/MArgDatabase.h>
 
 const char * CxApiSelectNegativeFaceCmd::kCmdName = "cxSelectNegativeFace";
+const char * kToleranceFlagSN = "-t";
+const char * kToleranceFlagLN = "-tolerance";
 
 CxApiSelectNegativeFaceCmd::CxApiSelectNegativeFaceCmd()
 {
     MGlobal::displayInfo("selectNegativeFace command loaded.");
+    tolerance = 0.005;
 }
 
 CxApiSelectNegativeFaceCmd::~CxApiSelectNegativeFaceCmd()
@@ -25,10 +30,40 @@ void * CxApiSelectNegativeFaceCmd::creator()
     return new CxApiSelectNegativeFaceCmd();
 }
 
+MSyntax CxApiSelectNegativeFaceCmd::new_syntax()
+{
+    MSyntax syntax;
+    MStatus stat;
+    stat = syntax.addFlag(kToleranceFlagSN, kToleranceFlagLN, MSyntax::kDouble);
+    return syntax;
+}
+
+MStatus CxApiSelectNegativeFaceCmd::parse_syntax(const MArgList & arg_list)
+{
+    MArgDatabase parser(syntax(), arg_list);
+    MStatus stat;
+
+    if (parser.isFlagSet(kToleranceFlagSN, &stat) && stat == MS::kSuccess)
+    {
+        stat = parser.getFlagArgument(kToleranceFlagSN, 0, tolerance);
+        if (tolerance < 0.001 || tolerance > 1.0) {
+            MGlobal::displayError("The tolerance must between 0.001 to 1.0!");
+            return MS::kInvalidParameter;
+        }
+    }
+    return stat;
+}
+
 MStatus CxApiSelectNegativeFaceCmd::doIt(const MArgList & arg_list)
 {
-    MStatus stat;
+    MStatus stat = parse_syntax(arg_list);
+
+    if (stat != MS::kSuccess) {
+        return stat;
+    }
+
     MSelectionList selection_list;
+    MSelectionList result_selection_list;
     MDagPath dag_path;
     MObject object;
 
@@ -46,7 +81,7 @@ MStatus CxApiSelectNegativeFaceCmd::doIt(const MArgList & arg_list)
                 MPointArray point_arr;
                 it_poly.getPoints(point_arr, MSpace::kWorld, &stat);
                 for (unsigned int idx = 0 ; idx < point_arr.length() ; idx++) {
-                    if ((point_arr[idx].x + 0.005) < 0.0) {
+                    if ((point_arr[idx].x + tolerance) < 0.0) {
                         is_negative = true;
                         break;
                     }
@@ -59,9 +94,13 @@ MStatus CxApiSelectNegativeFaceCmd::doIt(const MArgList & arg_list)
 
             MGlobal::clearSelectionList();
             MGlobal::select(dag_path, fn_sic.object());
+            MGlobal::getActiveSelectionList(result_selection_list);
         } else {
             MGlobal::displayWarning("Please select a mesh!");
         }
+        MStringArray result_items;
+        result_selection_list.getSelectionStrings(result_items);
+        setResult(result_items);
     }
     return stat;
 }
